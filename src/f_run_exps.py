@@ -11,8 +11,47 @@ from f_svm import svm
 from f_polyquery_msed_logscale import polyquery_msed_logscale
 from f_process_data import *
 from tqdm import tqdm
-import os
 import inspect
+import zipfile
+
+def get_poly_alpha_beta_gamma(k_neg):
+    if k_neg == 0:
+        return 0.75, 0.25, 0.0
+    elif k_neg == -1:
+        return 1, 0.25, 0.25
+    else:
+        return 0.75, 1, 0.75
+    
+def get_poly_msed_alpha_beta_gamma(k_neg):
+    if k_neg == 0:
+        return 0.25, 0.75, 0.0
+    elif k_neg == -1:
+        return 1, 0.25, 0.25
+    else:
+        return 0.75, 1, 0.75
+    
+def get_rocchio_alpha_beta_gamma(k_neg, use_batch=False):
+    # Return alpha, beta, gamma based on k_neg and batch processing.
+    if k_neg == 0:
+        return 0.75, 0.25, 0.0
+    elif k_neg == -1:
+        return 1, 0.25, 0.25
+    elif use_batch:
+        return 0.75, 0.75, 1
+    else:
+        return 0.75, 1, 0.75
+    
+def get_svm_alpha_beta(k_neg, use_batch):
+    # Return alpha and beta values for SVM based on k_neg and batch processing.
+    if use_batch:
+        return 0, 1
+    elif k_neg == 0:
+        return 0.5, 0.5
+    else:
+        return 0.75, 0.25
+
+
+
 
 
 
@@ -41,6 +80,7 @@ def data_loading():
     '''
     df_visione_mapping, df_query_judgment, df_complete, df_complete_unique_sorted, df_visione_mapping_query, shot_labels_query,queries  = process_data('/home/francescascotti/data/avsGT/avs_gt_visione_mapping.csv', '/home/francescascotti/data/avsGT/avs_gt_visione_mapping_query_judgment.csv', threshold_1=200, threshold_0=1400)
     return df_visione_mapping, df_query_judgment, df_complete, df_complete_unique_sorted, df_visione_mapping_query, shot_labels_query,queries
+
 
 def save_results(exp_params, output_filename,action_dic, num_positives_at_iter,map_results,ndcg_results, recall_results):
     """
