@@ -59,6 +59,7 @@ datasets = [ "df_1608.csv", "df_1707.csv", "df_1597.csv", "df_1671.csv", "df_159
 # folder where the output files are saved
 output_directory="out_results/"
 
+
 # dictionary with the output filenames
 output_filenames={
 "SVM": f"{output_directory}/exps_res_svm.jsonl",
@@ -98,9 +99,13 @@ def read_csv_from_zip(zip_path, internal_file):
     Returns:
         pd.DataFrame: The dataframe loaded from the CSV file.
     """
+   
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        with zip_ref.open(internal_file) as file:
-            return pd.read_csv(file)
+        if internal_file in zip_ref.namelist():
+            with zip_ref.open(internal_file) as file:
+                return pd.read_csv(file)
+        else:
+            raise FileNotFoundError(f"'{internal_file}' not found in the zip archive.")
         
 
 def setup_output_files(method):
@@ -110,9 +115,7 @@ def setup_output_files(method):
     output_done_filename = output_filename.split(".")[0] + "_done.jsonl"
     output_todo_fn = output_filename.split(".")[0] + "_todo.jsonl"
 
-    # Create the output directory if it does not exist.
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
+
 
     # Create the output_done_filename if it does not exist.
     if not os.path.exists(output_done_filename):
@@ -208,7 +211,7 @@ def should_run_experiment(exp_params, done_experiments_df):
     id_exp = exp_params["exp_id"]
     return done_experiments_df.empty or (id_exp not in done_experiments_df["exp_id"].values)
 
-def load_dataset(exp_params):
+def load_dataset(exp_params , data_preprocessing):
     # Load the dataset from the zip files.
     dataset_name = exp_params["dataset"]
     normalized_file = f"dataset_normalized/{dataset_name}.csv"
@@ -216,24 +219,25 @@ def load_dataset(exp_params):
     softmax_file = f"dataset_softmax/{dataset_name}_softmax.csv"
 
     # Read the CSV files directly from the zip files
-    normalized_df = read_csv_from_zip(normalized_zip_path, normalized_file)
-    logistic_df = read_csv_from_zip(logistic_zip_path, logistic_file)
-    softmax_df = read_csv_from_zip(softmax_zip_path, softmax_file)
+    if data_preprocessing == "softmax":
+        dataset_df= read_csv_from_zip(softmax_zip_path, softmax_file)
+    elif data_preprocessing == "logistic_L1_normalized":
+        dataset_df=  read_csv_from_zip(logistic_zip_path, logistic_file)
+    elif data_preprocessing == "L2_normalized":
+        dataset_df=  read_csv_from_zip(normalized_zip_path, normalized_file)
+    else:
+        print(f"Data preprocessing method {data_preprocessing} not implemented - skipping it")
+        return None
+
 
 
 
     # Shuffle the columns of the normalized_df using seed 0 to avoid bias.
-    img_ids = normalized_df.columns.tolist()
+    img_ids = dataset_df.columns.tolist()
     shuffle_ids = np.random.RandomState(0).permutation(img_ids)
-    normalized_df = normalized_df[shuffle_ids]    
-    logistic_df = logistic_df[shuffle_ids]
-    softmax_df = softmax_df[shuffle_ids]
+    dataset_df=  dataset_df[shuffle_ids]    
+    return dataset_df
 
-    return {
-        "L2_normalized": normalized_df,
-        "logistic_L1_normalized": logistic_df,
-        "softmax": softmax_df
-    }
 
 
 def run_experiments_for_method(method, output_filename, output_done_filename, output_todo_fn,output_err_filename):
@@ -252,18 +256,19 @@ def run_experiments_for_method(method, output_filename, output_done_filename, ou
             f_todo.close()
     
    
-    with open(output_done_filename, 'a') as f_done, open(output_err_filename, 'a') as f_err:
-        for exp_params in tqdm(todo_experiments, desc=f"Processing  {method}", leave=False):
+    with open(output_done_filename, 'a') as f_done, open(output_err_filename, 'w') as f_err:
+        print(f"Running experiments for {method}")
+        for exp_params in tqdm(todo_experiments, desc=f"Processing  {method}", leave=True, miniters=2):
             if should_run_experiment(exp_params, done_experiments_df):
-                dataset_df = load_dataset(exp_params)
+                dataset_df = load_dataset(exp_params,exp_params["data_preprocessing"])
                 try:
-                    run_experiment(exp_params, output_filename, dataset_df[exp_params["data_preprocessing"]])
+                    run_experiment(exp_params, output_filename, dataset_df)
                     f_done.write(json.dumps(exp_params) + "\n")
                 except Exception as e:
                     # Log the experiment parameters and the error message in the error file
                     error_entry = {
-                        "experiment_params": exp_params,
-                        "error": str(e)
+                        "error": str(e),
+                        "experiment_params": exp_params
                     }
                     f_err.write(json.dumps(error_entry) + "\n")
         
@@ -273,7 +278,7 @@ def run_experiments_for_method(method, output_filename, output_done_filename, ou
             os.remove(output_err_filename)
             os.remove(output_todo_fn)#delete the todo file
         else:
-            print(f"Error file {output_err_filename} is not empty. Check it for more details.Adiing skipping experiments in the future todo file")
+            print(f"Error file {output_err_filename} for {method} is not empty. Check it for more details.Adiing skipping experiments in the future todo file")
             #add the experiments that have failed to the todo file
             with open(output_err_filename, 'r') as f_err:
                 error_experiments = f_err.read().splitlines() 
@@ -283,10 +288,11 @@ def run_experiments_for_method(method, output_filename, output_done_filename, ou
                 for exp_params in error_experiments:
                     write_exp_params(exp_params, f_todo)
                 f_todo.close()
+        print(f"Experiments for method {method} COMPLETED")
+        pass
             
 
 def run_method_experiment(method):
-    print(f"Running experiments for method {method}")
     output_filename, output_err_filename, output_done_filename, output_todo_fn = setup_output_files(method)
     create_experiment_tasks(output_todo_fn, seeds, n_displays_list, k_pos_neg_list, datasets, max_iter_list, starting_pos_images_display0, avg_d_norm)
     run_experiments_for_method(method, output_filename, output_done_filename, output_todo_fn, output_err_filename)
@@ -306,18 +312,28 @@ def main():
     print("avg_d_norm:", avg_d_norm)
     print("avg_s_norm:", avg_s_norm)
     print("Number of datasets:", len(datasets))
-
+    # Create the output directory if it does not exist.
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
  
-    # #iterate over the methods to be tested 
+    # #Option 1: Run the experiments sequentially
+    #  #iterate over the methods to be tested 
     # for method in methods_to_test:
-    #     run_method_experiment(method, seeds, n_displays_list, k_pos_neg_list, datasets, max_iter_list, starting_pos_images_display0, avg_d_norm)
+    #     run_method_experiment(method)
 
-    # #parallelize the experiments
-    pool = multiprocessing.Pool(processes=len(methods_to_test))
-    results = list(tqdm(pool.imap(run_method_experiment, methods_to_test), total=len(methods_to_test),desc="Completed Methods"))
-    pool.close()
-    pool.join()
+
+    #Option 2: Run the experiments in parallel
+    # Determine the number of processes to use: the minimum of the number of methods and available CPUs.
+    num_processes = min(len(methods_to_test), multiprocessing.cpu_count())
+
+    # Create a pool with the determined number of processes.
+    with multiprocessing.Pool(processes=num_processes) as pool:
+        # Use `tqdm` to track progress, applying `imap` for efficient mapping of processes.
+        results = list(tqdm(pool.imap(run_method_experiment, methods_to_test), 
+                            total=len(methods_to_test), 
+                            desc="Methods"))
    
+   #Option 3 not tested
     # with concurrent.futures.ThreadPoolExecutor() as executor:
     #     futures = {executor.submit(run_method_experiment, method): method for method in methods_to_test}
     #     # Initialize tqdm
@@ -331,4 +347,5 @@ def main():
     print("Experiments completed (check err files if they existe in the output folder).")
 
 if __name__ == '__main__':
+      
       main()
