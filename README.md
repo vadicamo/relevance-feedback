@@ -1,3 +1,5 @@
+#### Note: This project is currently being updated. Please check back in a few days for the latest updates!
+
 # Comparative Analysis of Relevance Feedback Techniques for Image Retrieval
 
 This GitHub repository contains the code to reproduce the comparison of four relevance feedback techniques: Rocchio, PicHunter$^\star$, Polyadic Query, and Linear Support Vector Machines. These techniques represent diverse strategies in relevance feedback, encompassing query vector modification, relevance probability estimation, adaptive similarity metrics, and classifier learning.
@@ -38,7 +40,7 @@ Here’s a section to encourage users to cite your paper:
 
 If you use this code or dataset in your research, please cite the following paper:
 
-L. Vadicamo, F. Scotti, A. Dearle, R. Connor, *Comparative Analysis of Relevance Feedback Techniques for Image Retrieval*, in Proceedings of MMM 2025 (in press).
+L. Vadicamo, F. Scotti, A. Dearle, R. Connor, *Comparative Analysis of Relevance Feedback Techniques for Image Retrieval*, in Proceedings off the 31st International Conference on Multimedia Modeling (MMM 2025) (in press).
 
 You can use the following BibTeX entry:
 
@@ -46,7 +48,7 @@ You can use the following BibTeX entry:
 @inproceedings{vadicamo2025comparative,
   author    = {Lucia Vadicamo and Francesca Scotti and Alan Dearle and Richard Connor},
   title     = {Comparative Analysis of Relevance Feedback Techniques for Image Retrieval},
-  booktitle = {Proceedings of MMM 2025},
+  booktitle = {Proceedings of the 31st International Conference on Multimedia Modeling (MMM 2025)},
   year      = {2025},
   note      = {in press}
 }
