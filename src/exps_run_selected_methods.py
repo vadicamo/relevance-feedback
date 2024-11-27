@@ -333,18 +333,7 @@ def main():
                             total=len(methods_to_test), 
                             desc="Methods"))
    
-   #Option 3 not tested
-    # with concurrent.futures.ThreadPoolExecutor() as executor:
-    #     futures = {executor.submit(run_method_experiment, method): method for method in methods_to_test}
-    #     # Initialize tqdm
-    #     for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures),desc="Completed Methods"):
-    #         method = futures[future]
-    #         try:
-    #             future.result()
-    #         except Exception as e:
-    #             print(f"Error in {method}: {e}")
-
-    print("Experiments completed (check err files if they existe in the output folder).")
+    print("Experiments completed (check err files if they exists in the output folder).")
 
 if __name__ == '__main__':
       
