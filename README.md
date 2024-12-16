@@ -1,4 +1,4 @@
-#### Note: This project is currently being updated. Please check back in a few days for the latest updates!
+
 
 # Comparative Analysis of Relevance Feedback Techniques for Image Retrieval
 
@@ -31,10 +31,6 @@ After downloading, copy the files into the /data directory before proceeding wit
 The notebook located at `/src/analysis_and_plot_results.ipynb` contains the analysis of the experimental results. In this notebook, you will find detailed insights and visualizations derived from the experiments.
 
 Additionally, the folder `out_results` contains the precomputed results obtained from running the script `/src/exps_run_selected_methods.py`. These results can be used for further analysis or comparison without the need to rerun the experiments.
-
-Here’s a section to encourage users to cite your paper:
-
----
 
 ## Citation
 
