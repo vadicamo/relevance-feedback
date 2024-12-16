@@ -25,7 +25,7 @@ Thank you for your understanding, and happy experimenting!
 
 ### SELECT PARAMETERS #### 
 #select the methods to be tested (this affects the execution time)
-methods_to_test=["SVM", "Rocchio", "Polyquery", "Polyquery_msed_logscale"]
+methods_to_test=["SVM", "Rocchio", "Pichunter", "Polyquery", "Polyquery_msed_logscale"]
 
 #select the update methods to be tested (this affects the execution time)
 # true means that the batch update method is used
@@ -57,13 +57,14 @@ datasets = [ "df_1608.csv", "df_1707.csv", "df_1597.csv", "df_1671.csv", "df_159
 ### PATHS AND FILENAMES ###
 
 # folder where the output files are saved
-output_directory="out_results/"
+output_directory="out_results/" #"precomputed_results/clip/"
 
 
 # dictionary with the output filenames
 output_filenames={
 "SVM": f"{output_directory}/exps_res_svm.jsonl",
 "Rocchio": f"{output_directory}/exps_res_rocchio.jsonl",
+"Pichunter": f"{output_directory}/exps_res_pichunter.jsonl",
 "Polyquery": f"{output_directory}/exps_res_poly.jsonl",
 "Polyquery_msed_logscale": f"{output_directory}/exps_res_poly_msed_logscale.jsonl"
 }
@@ -156,7 +157,7 @@ def process_methods(exp_params, f_todo,avg_d_norm):
             elif method == "Rocchio":
                 process_rocchio(exp_params, use_batch, f_todo)
             elif method == "Pichunter":
-                process_pichunter(exp_params, use_batch, f_todo,avg_d_norm)
+                process_pichunter(exp_params, use_batch, f_todo)
             elif method == "SVM":
                 process_svm(exp_params, use_batch, f_todo)
             else:
@@ -317,7 +318,7 @@ def main():
         os.makedirs(output_directory)
  
     # #Option 1: Run the experiments sequentially
-    #  #iterate over the methods to be tested 
+    # #  #iterate over the methods to be tested 
     # for method in methods_to_test:
     #     run_method_experiment(method)
 
