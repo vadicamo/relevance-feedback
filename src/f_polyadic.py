@@ -82,7 +82,7 @@ def poly_single_step(data_df,display_df, relevant_ids,non_relevant_ids, alpha=1,
             # beta=beta+alpha #we want to keep alpha + beta - gamma=1
             # alpha=0
         else:
-            old_scores = get_similarity_matrix(initial_query,data_df, fun_name=fun_name)[0]#FIXME 
+            old_scores = get_similarity_matrix(initial_query,data_df, fun_name=fun_name)[0]
 
     selected_images_at_this_iteration=[im for im in non_relevant_ids]+[im for im in relevant_ids]
     
@@ -90,7 +90,7 @@ def poly_single_step(data_df,display_df, relevant_ids,non_relevant_ids, alpha=1,
         return display_df, old_scores
         
     relevant = data_df[relevant_ids].to_numpy()
-    non_relevant = data_df[non_relevant_ids].to_numpy() #FIXME if data_df[non_relevant_ids] null 
+    non_relevant = data_df[non_relevant_ids].to_numpy() 
     new_scores = polyquery_score(old_scores, data_df, relevant, non_relevant, alpha, beta, gamma,fun_name=fun_name)
     display_df = create_display(data_df, new_scores, n_display, is_ascending=False)
 
