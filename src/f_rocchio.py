@@ -76,7 +76,7 @@ def rocchio_single_step(data_df,display_df, relevant_ids,non_relevant_ids, alpha
         return display_df, initial_query
         
     relevant = data_df[relevant_ids].to_numpy()
-    non_relevant = data_df[non_relevant_ids].to_numpy() #FIXME if data_df[non_relevant_ids] null 
+    non_relevant = data_df[non_relevant_ids].to_numpy() 
     new_query = new_query_rocchio(old_query, relevant, non_relevant, alpha, beta, gamma)
     old_query = new_query
 
